@@ -1,5 +1,6 @@
 # naming convention
-data "azurecaf_name" "wps" {
+# https://github.com/aztfmod/terraform-azurerm-caf/issues/1606
+resource "azurecaf_name" "wps" {
   name          = var.settings.name
   resource_type = "azurerm_web_pubsub"
   prefixes      = var.global_settings.prefixes
@@ -13,7 +14,7 @@ data "azurecaf_name" "wps" {
 # Ref : https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/web_pubsub
 
 resource "azurerm_web_pubsub" "wps" {
-  name                          = data.azurecaf_name.wps.result
+  name                          = resource.azurecaf_name.wps.result
   resource_group_name           = local.resource_group_name
   location                      = local.location
   sku                           = var.settings.sku
