@@ -82,6 +82,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
 
   custom_data = try(
+    base64encode(templatefile(format("%s/%s", var.var_folder_path, each.value.custom_data.template_path), each.value.custom_data.template_vars)),
+    base64encode(templatefile(format("%s/%s", path.cwd, each.value.custom_data.template_path), each.value.custom_data.template_vars)),
     try(
       try(local_sensitive_file.custom_data[each.key].content_base64, local.dynamic_custom_data[each.value.custom_data][each.value.name]),
       try(filebase64(format("%s/%s", path.cwd, each.value.custom_data)), base64encode(each.value.custom_data))),
