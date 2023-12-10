@@ -266,10 +266,13 @@ module "queue" {
 module "container" {
   source   = "./container"
   for_each = try(var.storage_account.containers, {})
-
   storage_account_name = azurerm_storage_account.stg.name
   settings             = each.value
   var_folder_path      = var.var_folder_path
+  remote_objects            = var.remote_objects
+  client_config             = local.client_config
+  primary_connection_string = azurerm_storage_account.stg.primary_connection_string
+  primary_blob_endpoint     = azurerm_storage_account.stg.primary_blob_endpoint
 }
 
 module "data_lake_filesystem" {

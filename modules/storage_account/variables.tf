@@ -70,3 +70,7 @@ variable "virtual_subnets" {
   default     = {}
   nullable    = false
 }
+variable "remote_objects" {
+  description = "Allow the landing zone to retrieve remote tfstate objects and pass them to the CAF module."
+  default     = {}
+}
