@@ -38,7 +38,7 @@ data "azurecaf_name" "os_disk_windows" {
 }
 
 resource "azurerm_windows_virtual_machine" "vm" {
-  depends_on = [azurerm_network_interface.nic, azurerm_network_interface_security_group_association.nic_nsg]
+  depends_on = [azurerm_network_interface.nic, azurerm_network_interface.nic_ignore_ip_configuration, azurerm_network_interface_security_group_association.nic_nsg]
   for_each   = local.os_type == "windows" ? var.settings.virtual_machine_settings : {}
 
   admin_password                                         = try(each.value.admin_password_key, null) == null ? random_password.admin[local.os_type].result : local.admin_password

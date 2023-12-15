@@ -14,7 +14,7 @@ resource "azurecaf_name" "legacy" {
 
 # Name of the Linux computer name
 resource "azurecaf_name" "legacy_computer_name" {
-  depends_on = [azurerm_network_interface.nic, azurerm_network_interface_security_group_association.nic_nsg]
+  depends_on = [azurerm_network_interface.nic, azurerm_network_interface.nic_ignore_ip_configuration, azurerm_network_interface_security_group_association.nic_nsg]
   for_each   = local.os_type == "legacy" ? var.settings.virtual_machine_settings : {}
 
   name          = try(each.value.computer_name, each.value.name)

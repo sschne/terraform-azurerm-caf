@@ -3,7 +3,7 @@ output "id" {
 }
 
 output "ip_configuration" {
-  value       = azurerm_network_interface.nic
+  value       = local.network_interfaces
   description = "Adding the network_interface.nic to support remote dns on virtual networks"
 }
 
@@ -13,7 +13,7 @@ output "os_type" {
 
 output "internal_fqdns" {
   value = try(var.settings.networking_interfaces, null) != null ? flatten([
-    for nic_key in try(var.settings.virtual_machine_settings[local.os_type].network_interface_keys, []) : format("%s.%s", try(azurerm_network_interface.nic[nic_key].internal_dns_name_label, try(azurerm_linux_virtual_machine.vm["linux"].name, azurerm_windows_virtual_machine.vm["windows"].name)), azurerm_network_interface.nic[nic_key].internal_domain_name_suffix)
+    for nic_key in try(var.settings.virtual_machine_settings[local.os_type].network_interface_keys, []) : format("%s.%s", try(local.network_interfaces[nic_key].internal_dns_name_label, try(azurerm_linux_virtual_machine.vm["linux"].name, azurerm_windows_virtual_machine.vm["windows"].name)), local.network_interfaces[nic_key].internal_domain_name_suffix)
   ]) : null
 }
 
@@ -47,7 +47,7 @@ output "nic_id" {
   value = coalescelist(
     flatten(
       [
-        for nic_key in try(var.settings.virtual_machine_settings[local.os_type].network_interface_keys, []) : format("%s.%s", try(azurerm_network_interface.nic[nic_key].id, try(azurerm_linux_virtual_machine.vm["linux"].name, azurerm_windows_virtual_machine.vm["windows"].name)), azurerm_network_interface.nic[nic_key].id)
+        for nic_key in try(var.settings.virtual_machine_settings[local.os_type].network_interface_keys, []) : format("%s.%s", try(local.network_interfaces[nic_key].id, try(azurerm_linux_virtual_machine.vm["linux"].name, azurerm_windows_virtual_machine.vm["windows"].name)), local.network_interfaces[nic_key].id)
       ]
     ),
     try(var.settings.networking_interface_ids, [])
@@ -57,8 +57,8 @@ output "nic_id" {
 output "nics" {
   value = {
     for key, value in var.settings.networking_interfaces : key => {
-      id   = azurerm_network_interface.nic[key].id
-      name = azurerm_network_interface.nic[key].name
+      id   = local.network_interfaces[key].id
+      name = local.network_interfaces[key].name
     }
   }
 }

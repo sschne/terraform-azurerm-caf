@@ -9,10 +9,13 @@ locals {
   network_interface_ids = flatten(
     [
       for nic_key in try(var.settings.virtual_machine_settings[var.settings.os_type].network_interface_keys, []) : [
-        azurerm_network_interface.nic[nic_key].id
+        local.network_interfaces[nic_key].id
       ]
     ]
   )
+
+  network_interfaces = merge(azurerm_network_interface.nic, azurerm_network_interface.nic_ignore_ip_configuration)
+
   # network_subnets = flatten([
   #   for network_key, network in var.networks : [
   #     for subnet_key, subnet in network.subnets : {
@@ -39,7 +42,7 @@ resource "azurecaf_name" "nic" {
 }
 
 resource "azurerm_network_interface" "nic" {
-  for_each = var.settings.networking_interfaces
+  for_each = { for k, v in var.settings.networking_interfaces : k => v if try(v.ignore_ip_configuration, false) == false }
   # lifecycle {
   #   ignore_changes = [resource_group_name, location]
   # }
@@ -78,6 +81,54 @@ resource "azurerm_network_interface" "nic" {
       primary                       = lookup(ip_configuration.value, "primary", null)
       public_ip_address_id          = can(ip_configuration.value.public_address_id) || can(try(ip_configuration.value.public_address_id.key, ip_configuration.value.public_ip_address_key)) == false ? try(ip_configuration.value.public_address_id, null) : var.public_ip_addresses[try(ip_configuration.value.public_ip_address.lz_key, var.client_config.landingzone_key)][try(ip_configuration.value.public_ip_address.key, ip_configuration.value.public_ip_address_key)].id
     }
+  }
+}
+
+# Special network interface, where ip_configuration has lifecycle ignore_changes. This is for systems which manage their own IP configurations for failover scenarios, e.g.
+# Fortinet and SDN connector https://docs.fortinet.com/document/fortigate-public-cloud/7.2.0/azure-administration-guide/489236/configuring-an-azure-sdn-connector-for-azure-resources
+resource "azurerm_network_interface" "nic_ignore_ip_configuration" {
+  for_each            = { for k, v in var.settings.networking_interfaces : k => v if try(v.ignore_ip_configuration, false) == true }
+  name                = azurecaf_name.nic[each.key].result
+  location            = local.location
+  resource_group_name = local.resource_group_name
+
+  dns_servers                   = lookup(each.value, "dns_servers", null)
+  enable_ip_forwarding          = lookup(each.value, "enable_ip_forwarding", false)
+  enable_accelerated_networking = lookup(each.value, "enable_accelerated_networking", false)
+  internal_dns_name_label       = lookup(each.value, "internal_dns_name_label", null)
+  tags                          = merge(local.tags, try(each.value.tags, null))
+
+  ip_configuration {
+    name                          = azurecaf_name.nic[each.key].result
+    subnet_id                     = can(each.value.subnet_id) || can(each.value.vnet_key) == false ? try(each.value.subnet_id, var.virtual_subnets[try(each.value.lz_key, var.client_config.landingzone_key)][each.value.subnet_key].id) : var.vnets[try(each.value.lz_key, var.client_config.landingzone_key)][each.value.vnet_key].subnets[each.value.subnet_key].id
+    private_ip_address_allocation = lookup(each.value, "private_ip_address_allocation", "Dynamic")
+    private_ip_address_version    = lookup(each.value, "private_ip_address_version", null)
+    private_ip_address            = lookup(each.value, "private_ip_address", null)
+    primary                       = lookup(each.value, "primary", null)
+    public_ip_address_id          = can(each.value.public_address_id) || can(try(each.value.public_ip_address.key, each.value.public_ip_address_key)) == false ? try(each.value.public_address_id, null) : var.public_ip_addresses[try(each.value.public_ip_address.lz_key, var.client_config.landingzone_key)][try(each.value.public_ip_address.key, each.value.public_ip_address_key)].id
+
+    # Public ip address id logic in previous version was bugged, as it checks for var.client_config.landingzone_key prior to each.value.lz_key. thus, in the new logic to ensure backward compatible, only each.public_ip_address.lz_key is considered and not each.value.lz_key for public ip.
+
+  }
+
+  dynamic "ip_configuration" {
+    for_each = try(each.value.ip_configurations, {})
+
+    content {
+      name                          = ip_configuration.value.name
+      subnet_id                     = can(ip_configuration.value.subnet_id) || can(ip_configuration.value.virtual_subnet_key) ? try(ip_configuration.value.subnet_id, var.virtual_subnets[try(ip_configuration.value.lz_key, var.client_config.landingzone_key)][ip_configuration.value.virtual_subnet_key].id) : var.vnets[try(ip_configuration.value.lz_key, var.client_config.landingzone_key)][ip_configuration.value.vnet_key].subnets[ip_configuration.value.subnet_key].id
+      private_ip_address_allocation = try(ip_configuration.value.private_ip_address_allocation, "Dynamic")
+      private_ip_address_version    = lookup(ip_configuration.value, "private_ip_address_version", null)
+      private_ip_address            = lookup(ip_configuration.value, "private_ip_address", null)
+      primary                       = lookup(ip_configuration.value, "primary", null)
+      public_ip_address_id          = can(ip_configuration.value.public_address_id) || can(try(ip_configuration.value.public_address_id.key, ip_configuration.value.public_ip_address_key)) == false ? try(ip_configuration.value.public_address_id, null) : var.public_ip_addresses[try(ip_configuration.value.public_ip_address.lz_key, var.client_config.landingzone_key)][try(ip_configuration.value.public_ip_address.key, ip_configuration.value.public_ip_address_key)].id
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      ip_configuration
+    ]
   }
 }
 
@@ -129,7 +180,7 @@ resource "azurerm_network_interface_security_group_association" "nic" {
     if try(try(value.nsg_key, value.nsg_id), null) != null
   }
 
-  network_interface_id      = azurerm_network_interface.nic[each.key].id
+  network_interface_id      = local.network_interfaces[each.key].id
   network_security_group_id = try(each.value.nsg_id, var.network_security_groups[try(each.value.network_security_group.lz_key, var.client_config.landingzone_key)][each.value.nsg_key].id)
 }
 
@@ -140,6 +191,6 @@ resource "azurerm_network_interface_security_group_association" "nic_nsg" {
     if try(value.network_security_group, null) != null
   }
 
-  network_interface_id      = azurerm_network_interface.nic[each.key].id
+  network_interface_id      = local.network_interfaces[each.key].id
   network_security_group_id = var.network_security_groups[try(each.value.network_security_group.lz_key, var.client_config.landingzone_key)][each.value.network_security_group.key].id
 }

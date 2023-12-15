@@ -51,7 +51,7 @@ resource "azurerm_key_vault_certificate" "self_signed_winrm" {
 
       subject_alternative_names {
         dns_names = flatten([
-          for nic_key in var.settings.virtual_machine_settings[local.os_type].network_interface_keys : format("%s.%s", try(azurerm_network_interface.nic[nic_key].internal_dns_name_label, data.azurecaf_name.windows[each.key].result), azurerm_network_interface.nic[nic_key].internal_domain_name_suffix)
+          for nic_key in var.settings.virtual_machine_settings[local.os_type].network_interface_keys : format("%s.%s", try(local.network_interfaces[nic_key].internal_dns_name_label, data.azurecaf_name.windows[each.key].result), local.network_interfaces[nic_key].internal_domain_name_suffix)
         ])
       }
     }

@@ -1,7 +1,7 @@
 resource "azurerm_network_interface_application_security_group_association" "assoc" {
   for_each = local.nic_asg
 
-  network_interface_id          = azurerm_network_interface.nic[each.value.nic_key].id
+  network_interface_id          = local.network_interfaces[each.value.nic_key].id
   application_security_group_id = each.value.asg_id
 }
 
