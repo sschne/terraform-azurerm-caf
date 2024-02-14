@@ -449,4 +449,3 @@ variable "load_test" {
   description = "Configuration object - Load Test resources"
   default     = {}
 }
-
