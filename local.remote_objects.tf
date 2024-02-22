@@ -27,6 +27,8 @@ locals {
     azuread_service_principals                     = try(local.combined_objects_azuread_service_principals, null)
     azuread_service_principal_passwords            = try(local.combined_objects_azuread_service_principal_passwords, null)
     azuread_users                                  = try(local.combined_objects_azuread_users, null)
+    azuread_access_package_catalogs                = try(local.combined_objects_azuread_access_package_catalogs, null)
+    azuread_access_packages                        = try(local.combined_objects_azuread_access_packages, null)
     firewall_policies                              = try(local.combined_objects_azurerm_firewall_policies, null)
     firewalls                                      = try(local.combined_objects_azurerm_firewalls, null)
     batch_accounts                                 = try(local.combined_objects_batch_accounts, null)

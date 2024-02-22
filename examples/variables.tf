@@ -1139,3 +1139,14 @@ variable "search_services" {
 variable "load_test" {
   default = {}
 }
+
+variable "azuread_access_packages" {
+  default = {}
+}
+variable "azuread_access_package_catalogs" {
+  default = {}
+}
+
+variable "azuread_access_package_assignment_policies" {
+  default = {}
+}
