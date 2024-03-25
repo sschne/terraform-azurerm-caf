@@ -1150,3 +1150,7 @@ variable "azuread_access_package_catalogs" {
 variable "azuread_access_package_assignment_policies" {
   default = {}
 }
+
+variable "federated_identity_credentials" {
+  default = {}
+}

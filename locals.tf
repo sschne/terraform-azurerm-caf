@@ -376,6 +376,7 @@ locals {
     sentinel_dc_office_365              = try(var.security.sentinel_dc_office_365, {})
     sentinel_dc_security_center         = try(var.security.sentinel_dc_security_center, {})
     sentinel_dc_threat_intelligence     = try(var.security.sentinel_dc_threat_intelligence, {})
+    federated_identity_credentials      = try(var.security.federated_identity_credentials, {})
   }
 
   shared_services = {

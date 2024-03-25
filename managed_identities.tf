@@ -16,3 +16,21 @@ output "managed_identities" {
   value = module.managed_identities
 
 }
+
+module "federated_identity_credentials" {
+  source   = "./modules/security/federated_identity_credential"
+  for_each = local.security.federated_identity_credentials
+
+  client_config       = local.client_config
+  name                = each.value.name
+  settings            = each.value
+  resource_group_name = can(each.value.resource_group.name) || can(each.value.resource_group_name) ? try(each.value.resource_group.name, each.value.resource_group_name) : local.combined_objects_resource_groups[try(each.value.resource_group.lz_key, local.client_config.landingzone_key)][try(each.value.resource_group_key, each.value.resource_group.key)].name
+  remote_objects = {
+    managed_identities = local.combined_objects_managed_identities
+    aks_clusters       = local.combined_objects_aks_clusters
+  }
+}
+
+output "federated_identity_credentials" {
+  value = module.federated_identity_credentials
+}
