@@ -1135,3 +1135,7 @@ variable "search_services" {
 variable "load_test" {
   default = {}
 }
+
+variable "federated_identity_credentials" {
+  default = {}
+}
