@@ -1152,5 +1152,14 @@ variable "azuread_access_package_assignment_policies" {
 }
 
 variable "federated_identity_credentials" {
+    default = {}
+}
+variable "notification_hub_namespaces" {
+  default = {}
+}
+variable "notification_hubs" {
+  default = {}
+}
+variable "notification_hub_auth_rules" {
   default = {}
 }
