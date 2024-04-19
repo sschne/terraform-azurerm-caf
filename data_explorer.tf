@@ -16,6 +16,12 @@ module "kusto_clusters" {
     pips               = local.combined_objects_public_ip_addresses
     managed_identities = local.combined_objects_managed_identities
   }
+
+  remote_objects = {
+    diagnostics         = local.combined_diagnostics
+  }
+ 
+
 }
 output "kusto_clusters" {
   value = module.kusto_clusters

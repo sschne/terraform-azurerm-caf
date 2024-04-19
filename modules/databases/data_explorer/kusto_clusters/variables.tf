@@ -25,6 +25,10 @@ variable "vnets" {
 variable "pips" {
   default = null
 }
+variable "remote_objects" {
+  description = "(Required) Specifies the supported Azure location where to create the resource. Changing this forces a new resource to be created."
+  default     = {}
+}
 variable "private_endpoints" {}
 variable "combined_resources" {
   description = "Provide a map of combined resources for environment_variables_from_resources"
