@@ -815,6 +815,9 @@ variable "cdn_endpoint" {
 variable "cdn_profile" {
   default = {}
 }
+variable "cdn_front_door_profiles" {
+  default = {}
+}
 variable "function_apps" {
   default = {}
 }
@@ -1152,7 +1155,7 @@ variable "azuread_access_package_assignment_policies" {
 }
 
 variable "federated_identity_credentials" {
-    default = {}
+  default = {}
 }
 variable "notification_hub_namespaces" {
   default = {}
