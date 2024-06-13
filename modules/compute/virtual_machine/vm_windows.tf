@@ -110,7 +110,8 @@ resource "azurerm_windows_virtual_machine" "vm" {
     for_each = try(each.value.additional_capabilities, false) == false ? [] : [1]
 
     content {
-      ultra_ssd_enabled = each.value.additional_capabilities.ultra_ssd_enabled
+      ultra_ssd_enabled   = try(each.value.additional_capabilities.ultra_ssd_enabled, null)
+      hibernation_enabled = try(each.value.additional_capabilities.hibernation_enabled, null)
     }
   }
 
