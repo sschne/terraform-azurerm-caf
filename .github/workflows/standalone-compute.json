@@ -53,6 +53,7 @@
     "compute/virtual_machine/215-vm-keyvault-for-windows-extension",
     "compute/virtual_machine/216-vm-linux_diagnostic_extensions",
     "compute/virtual_machine/217-vm-disk-encryption-set-msi",
+    "compute/virtual_machine/218-single-windows-vm-hibernation/configuration.tfvars",
     "compute/vmware_cluster/101-vmware_cluster"
   ]
 }
