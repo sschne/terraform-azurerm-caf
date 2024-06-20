@@ -12,6 +12,58 @@ resource_groups = {
   }
 }
 
+api_management = {
+  apim1 = {
+    name   = "example-apim"
+    region = "region1"
+    resource_group = {
+      key = "front_door"
+    }
+    publisher_name  = "My Company"
+    publisher_email = "company@terraform.io"
+
+    sku_name = "Developer_1"
+  }
+}
+
+vnets = {
+  vnet1 = {
+    resource_group_key = "front_door"
+    vnet = {
+      name          = "vnet1"
+      address_space = ["10.100.100.0/24"]
+    }
+    specialsubnets = {}
+    subnets = {
+      subnet1 = {
+        name = "subnet1"
+        cidr = ["10.100.100.0/29"]
+      }
+    }
+
+  }
+}
+
+lb = {
+  internal_lb = {
+    name = "lb"
+    resource_group = {
+      key = "front_door"
+    }
+    frontend_ip_configuration = {
+      ip_config = {
+        name = "ip_config"
+        subnet = {
+          vnet_key = "vnet1"
+          key      = "subnet1"
+        }
+        private_ip_address_allocation = "Dynamic"
+      }
+    }
+    sku = "Standard"
+  }
+}
+
 cdn_front_door_profiles = {
   profile1 = {
     name               = "profile1"
@@ -19,7 +71,7 @@ cdn_front_door_profiles = {
     sku_name           = "Standard_AzureFrontDoor"
     cdn_frontdoor_endpoints = {
       ep1 = {
-        name    = "endpoint1"
+        name    = "endpoint11"
         enabled = true
       }
     }
@@ -64,19 +116,23 @@ cdn_front_door_profiles = {
     cdn_frontdoor_origins = {
       origin1 = {
         name                           = "origin1"
-        cdn_frontdoor_origin_group_key = "group2"
+        cdn_frontdoor_origin_group_key = "group6"
         enabled                        = true
-        host_name                      = "contoso.com"
-        certificate_name_check_enabled = false
+        origin_public_ip_address = {
+          apim_key = "apim1"
+          lz_key   = "examples"
+        }
+        certificate_name_check_enabled = true
         weight                         = 1
       }
-
       origin2 = {
         name                           = "origin2"
         cdn_frontdoor_origin_group_key = "group2"
         enabled                        = true
-        host_name                      = "fabrikam.com"
-        certificate_name_check_enabled = false
+        origin_private_ip_address = {
+          lb_key = "internal_lb"
+        }
+        certificate_name_check_enabled = true
         weight                         = 1
       }
     }
@@ -184,7 +240,6 @@ cdn_front_door_profiles = {
             compression_enabled           = true
             content_types_to_compress     = ["text/html", "text/javascript", "text/xml"]
           }
-
         }
       }
     }
