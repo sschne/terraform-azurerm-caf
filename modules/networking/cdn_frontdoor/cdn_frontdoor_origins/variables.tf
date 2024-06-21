@@ -9,5 +9,7 @@ variable "settings" {
 }
 
 variable "cdn_frontdoor_origin_group_id" {
+}
 
+variable "origin_ip_address" {
 }

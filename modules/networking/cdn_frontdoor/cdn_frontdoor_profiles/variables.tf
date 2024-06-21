@@ -4,12 +4,22 @@ variable "base_tags" {
 }
 
 variable "resource_group_name" {
+
 }
 variable "settings" {
+
 }
 variable "global_settings" {
 
 }
 variable "location" {
+
+}
+
+variable "client_config" {
+
+}
+
+variable "combined_objects" {
 
 }

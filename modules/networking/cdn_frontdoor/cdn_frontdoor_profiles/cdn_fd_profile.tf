@@ -42,6 +42,13 @@ module "cdn_frontdoor_origins" {
   cdn_frontdoor_origin_group_id = module.cdn_frontdoor_origin_groups[each.value.cdn_frontdoor_origin_group_key].id
   for_each                      = try(var.settings.cdn_frontdoor_origins, {})
   settings                      = each.value
+  origin_ip_address = try(
+    var.combined_objects.api_management[try(each.value.origin_public_ip_address.lz_key, var.client_config.landingzone_key)][try(each.value.origin_public_ip_address.apim_key, each.value.origin_public_ip_address.apim.key)].public_ip_addresses[try(each.value.origin_public_ip_address.index, 0)],
+    var.combined_objects.api_management[try(each.value.origin_private_ip_address.lz_key, var.client_config.landingzone_key)][try(each.value.origin_private_ip_address.apim_key, each.value.origin_private_ip_address.apim.key)].private_ip_addresses[try(each.value.origin_private_ip_address.index, 0)],
+    var.combined_objects.public_ip_addresses[try(each.value.origin_public_ip_address.lz_key, var.client_config.landingzone_key)][try(each.value.origin_public_ip_address.public_ip_addresss_key, each.value.origin_public_ip_address.public_ip_address.key)].ip_address,
+    var.combined_objects.load_balancers[try(each.value.origin_private_ip_address.lz_key, var.client_config.landingzone_key)][try(each.value.origin_private_ip_address.lb_key, each.value.origin_private_ip_address.lb.key)].private_ip_addresses[try(each.value.origin_private_ip_address.index, 0)],
+    null
+  )
 }
 
 module "cdn_frontdoor_rules" {
