@@ -38,6 +38,12 @@ azuread_applications = {
       ]
     }
 
+    identifier_uris = [
+      "https://uri3.aztfmod.github.io/",
+      // Creates a URI in the form of api://{clientId}
+      "self",
+    ]
+
     api = {
       mapped_claims_enabled          = true
       requested_access_token_version = 2

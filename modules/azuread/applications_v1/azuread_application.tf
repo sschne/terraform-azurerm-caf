@@ -11,7 +11,6 @@ resource "azuread_application" "app" {
 
   sign_in_audience               = can(var.settings.available_to_other_tenants) || try(var.settings.sign_in_audience, null) != null ? try(var.settings.sign_in_audience, "AzureADMultipleOrgs") : null
   group_membership_claims        = try(var.settings.group_membership_claims, ["All"])
-  identifier_uris                = try(var.settings.identifier_uris, null)
   prevent_duplicate_names        = try(var.settings.prevent_duplicate_names, false)
   fallback_public_client_enabled = try(var.settings.public_client, false)
 
@@ -123,6 +122,15 @@ resource "azuread_application" "app" {
       }
     }
   }
+  lifecycle {
+    ignore_changes = [identifier_uris]
+  }
+}
+
+resource "azuread_application_identifier_uri" "this" {
+  for_each       = try(toset(var.settings.identifier_uris), [])
+  application_id = azuread_application.app.id
+  identifier_uri = each.value == "self" ? format("api://%s", azuread_application.app.id) : each.value
 }
 
 resource "random_uuid" "app_role_id" {
